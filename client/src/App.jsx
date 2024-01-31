@@ -12,6 +12,7 @@ import Detail from "./pages/Detail";
 import Footer from "./components/Footer";
 import Trailer from "./pages/Trailer";
 import Account from "./pages/Account";
+import VerifyEmail from "./pages/VerifyEmail";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/detail/:movieID" element={<Detail />} />
           <Route path="/trailer/:movieID" element={<Trailer />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
         </Routes>
       </AuthContextProvider>
     </div>
