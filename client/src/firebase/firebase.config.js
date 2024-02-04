@@ -23,7 +23,4 @@ const auth = getAuth(app);
 auth.languageCode = "it";
 export const db = getFirestore(app);
 
-const provider = new GoogleAuthProvider();
-provider.addScope("https://www.googleapis.com/auth/contacts.readonly");
-
-export { auth, provider };
+export { auth };

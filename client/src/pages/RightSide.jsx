@@ -7,7 +7,6 @@ const RightSide = () => {
   const [topRated, setTopRated] = useState([]);
   const [popular, setPopular] = useState([]);
   const [loading, setLoading] = useState(true);
-  console.log("Helllo");
 
   useEffect(() => {
     instance

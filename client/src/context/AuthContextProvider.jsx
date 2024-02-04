@@ -18,14 +18,12 @@ const AuthContextProvider = ({ children }) => {
    */
   useEffect(() => {
     const unSubcribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      setUser(currentUser?.uid);
       return () => {
         unSubcribe();
       };
     });
   }, []);
-
-
 
   return (
     <AuthContext.Provider value={{ user, setUser }}>

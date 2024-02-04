@@ -1,7 +1,7 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth, provider } from "../firebase/firebase.config";
+import { auth } from "../firebase/firebase.config";
 import { UserAuth } from "../context/AuthContextProvider";
 import GoogleButton from "react-google-button";
 import FacebookLogin from "react-facebook-login";
@@ -9,9 +9,13 @@ import {
   onAuthStateChanged,
   signInWithPopup,
   GoogleAuthProvider,
+  FacebookAuthProvider,
+  linkWithCredential,
 } from "firebase/auth";
 import firebaseDb from "../firebase/firebase.db";
 import axios from "axios";
+import { googleProvider } from "../firebase/google-config";
+import { facebookProvider } from "../firebase/facebook-config";
 
 const SignIn = () => {
   const { user, setUser } = UserAuth();
@@ -59,8 +63,8 @@ const SignIn = () => {
     });
   }
 
-  function handleSignIn() {
-    signInWithPopup(auth, provider)
+  function googleHandleSignIn() {
+    signInWithPopup(auth, googleProvider)
       .then((result) => {
         const credential = GoogleAuthProvider.credentialFromResult(result);
         const token = credential.accessToken;
@@ -82,25 +86,41 @@ const SignIn = () => {
       });
   }
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
+  function facebookHandleSignIn() {
+    signInWithPopup(auth, facebookProvider)
+      .then((result) => {
+        // The signed-in user info.
+        const user = result.user;
+        // This gives you a Facebook Access Token. You can use it to access the Facebook API.
+        const credential = FacebookAuthProvider.credentialFromResult(result);
+        const accessToken = credential.accessToken;
+
+        // IdP data available using getAdditionalUserInfo(result)
+        // ...
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(errorMessage);
+        // The email of the user's account used.
+        const email = error.customData.email;
+        // The AuthCredential type that was used.
+        const credential = FacebookAuthProvider.credentialFromError(error);
+        // ...
+      });
+  }
+  
+
+  onAuthStateChanged(auth, (currentUser) => {
+    if (currentUser) {
       // User is signed in, see docs for a list of available properties
       // https://firebase.google.com/docs/reference/js/auth.user
-      setUser(user.email);
-      firebaseDb.addNewUser(user.email);
+      setUser(currentUser.uid);
+      firebaseDb.addNewUser(currentUser.uid);
       navigate("/");
     }
   });
-
-  function responseFacebook(response) {
-    if (response) {
-      setUser(response.userID);
-      firebaseDb.addNewUser(response.userID);
-      navigate("/");
-    } else {
-      navigate("/sign-in");
-    }
-  }
 
   return (
     <div className="h-screen w-ful">
@@ -197,13 +217,14 @@ const SignIn = () => {
             <Link to="/sign-up">Đăng kí ngay</Link>
           </div>
         </div>
-        <GoogleButton onClick={handleSignIn} className="w-full" type="dark" />
+        <GoogleButton
+          onClick={googleHandleSignIn}
+          className="w-full"
+          type="dark"
+        />
         <FacebookLogin
-          appId="3186113411533599"
-          fields="name,email,picture"
-          callback={responseFacebook}
+          onClick={facebookHandleSignIn}
           size="medium"
-          cookie="false"
         />
       </form>
     </div>
