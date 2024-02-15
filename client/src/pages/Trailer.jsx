@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import instance from "../axios-config";
+import instance from "../axios/themovieApi-axios-config";
 import { Link } from "react-router-dom";
 import TrailerItem from "../components/TrailerItem";
 import Review from "../components/Review";

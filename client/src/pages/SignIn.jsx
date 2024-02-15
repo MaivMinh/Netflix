@@ -1,4 +1,3 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../firebase/firebase.config";
@@ -10,12 +9,11 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   FacebookAuthProvider,
-  linkWithCredential,
 } from "firebase/auth";
 import firebaseDb from "../firebase/firebase.db";
-import axios from "axios";
 import { googleProvider } from "../firebase/google-config";
 import { facebookProvider } from "../firebase/facebook-config";
+import authAxios from "../axios/authAxios-config";
 
 const SignIn = () => {
   const { user, setUser } = UserAuth();
@@ -31,28 +29,27 @@ const SignIn = () => {
     setLoading(true);
     e.preventDefault();
     // get infor from user's input data.
-    axios
+    authAxios
       .request({
-        url: "http://localhost:8080/auth/login",
+      url: "/auth/login",
         method: "POST",
-        headers: {
-          "Content-Type": "Application/json",
-        },
         data: {
           user: account,
         },
       })
-      .then((res) => {
-        if (res.data.result) {
-          setUser(account.username);
-          setLoading(false);
-          navigate("/");
-        } else {
-          setLoading(false);
-          setUser(undefined);
-          navigate("/sign-in");
-        }
-      });
+      .then(res => {
+        // Lấy data từ server gửi về rồi lưu vào authUser.
+        const data = res.data;
+        setUser(data);
+        setLoading(false);
+        navigate("/");
+      })
+      .catch(err => {
+        console.log(err.message);
+        setLoading(false);
+        setUser(undefined);
+        navigate("/sign-in");
+      })
   }
   function handleChange(e) {
     setAccount(() => {

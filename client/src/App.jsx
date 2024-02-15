@@ -9,12 +9,21 @@ import Favourite from "./pages/Favourite";
 import PlayMovie from "./pages/PlayMovie";
 import SideBar from "./components/SideBar";
 import Detail from "./pages/Detail";
-import Footer from "./components/Footer";
 import Trailer from "./pages/Trailer";
 import Account from "./pages/Account";
 import VerifyEmail from "./pages/VerifyEmail";
+import authAxios from "./axios/authAxios-config";
+import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
 function App() {
+  /* 
+  Instead, on login, you can deliver two tokens: access token and refresh token. Access token should be stored in Javascript memory and Refresh token should be stored in HttpOnly Cookie. Refresh token is used only and only for creating new access tokens - nothing more.
+
+  When user opens new tab, or on site refresh, you need to perform request to create new access token, based on refresh token which is stored in Cookie. 
+  */
+
+
   return (
     <div className="App relative">
       <AuthContextProvider>

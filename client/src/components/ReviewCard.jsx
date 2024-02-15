@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import instance from "../axios-config";
+import instance from "../axios/themovieApi-axios-config";
 import Review from "./Review";
 
 const ReviewCard = ({ movieID }) => {
