@@ -6,7 +6,6 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase/firebase.config";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 const AuthContextProvider = ({ children }) => {

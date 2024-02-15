@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../firebase/firebase.config";
 import { UserAuth } from "../context/AuthContextProvider";
@@ -25,31 +25,35 @@ const SignIn = () => {
   const [err, setErr] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (user != undefined) navigate("/");
+  });
+
   async function handleSubmit(e) {
     setLoading(true);
     e.preventDefault();
     // get infor from user's input data.
     authAxios
       .request({
-      url: "/auth/login",
+        url: "/auth/login",
         method: "POST",
         data: {
           user: account,
         },
       })
-      .then(res => {
+      .then((res) => {
         // Lấy data từ server gửi về rồi lưu vào authUser.
         const data = res.data;
         setUser(data);
         setLoading(false);
         navigate("/");
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err.message);
         setLoading(false);
         setUser(undefined);
         navigate("/sign-in");
-      })
+      });
   }
   function handleChange(e) {
     setAccount(() => {
@@ -107,7 +111,6 @@ const SignIn = () => {
         // ...
       });
   }
-  
 
   onAuthStateChanged(auth, (currentUser) => {
     if (currentUser) {
@@ -219,10 +222,7 @@ const SignIn = () => {
           className="w-full"
           type="dark"
         />
-        <FacebookLogin
-          onClick={facebookHandleSignIn}
-          size="medium"
-        />
+        <FacebookLogin onClick={facebookHandleSignIn} size="medium" />
       </form>
     </div>
   );

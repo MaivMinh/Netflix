@@ -12,9 +12,6 @@ import Detail from "./pages/Detail";
 import Trailer from "./pages/Trailer";
 import Account from "./pages/Account";
 import VerifyEmail from "./pages/VerifyEmail";
-import authAxios from "./axios/authAxios-config";
-import { jwtDecode } from "jwt-decode";
-import axios from "axios";
 
 function App() {
   /* 

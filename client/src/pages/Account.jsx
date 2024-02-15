@@ -1,18 +1,27 @@
 import React from "react";
 import { UserAuth } from "../context/AuthContextProvider";
 import authAxios from "../axios/authAxios-config";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const Account = () => {
-  function handleClick(e) {
-    authAxios.get("/auth/test")
-    .then(res => {
-      console.log("Success");
-    })
-    .catch(err => {
-      console.log("ERROR");
-    })
+  const { user, setUser } = UserAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (user == undefined) {
+      navigate("/sign-in");
+    }
+  });
 
+  function handleClick(e) {
+    authAxios
+      .get("/auth/test")
+      .then((res) => {
+        console.log("Success");
+      })
+      .catch((err) => {
+        console.log("ERROR");
+      });
   }
 
   return (

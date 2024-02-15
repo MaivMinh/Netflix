@@ -3,10 +3,15 @@ import { UserAuth } from "../context/AuthContextProvider";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase.config";
 import FavMovie from "../components/FavMovie";
+import { useNavigate } from "react-router-dom";
 
 const Favourite = () => {
-  const { user } = UserAuth();
+  const { user, setUser } = UserAuth();
   const [savedMovies, setSavedMovies] = useState([]);
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (user == undefined) navigate("/sign-in");
+  });
 
   function remove(id) {
     setSavedMovies((previousSavedMovies) => {

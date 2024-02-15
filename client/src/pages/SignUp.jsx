@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { UserAuth } from "../context/AuthContextProvider";
 
 const SignUp = () => {
+  const {user, setUser} = UserAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [account, setAccount] = useState({
@@ -11,6 +13,7 @@ const SignUp = () => {
     password: "",
   });
 
+ 
   function handleChange(e) {
     setAccount(() => {
       return {
@@ -100,7 +103,10 @@ const SignUp = () => {
               Đăng ký
             </button>
           ) : (
-            <div role="status" className="w-full py-2 mx-auto flex flex-row justify-center">
+            <div
+              role="status"
+              className="w-full py-2 mx-auto flex flex-row justify-center"
+            >
               <svg
                 aria-hidden="true"
                 class="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-red-600"

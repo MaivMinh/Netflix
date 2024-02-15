@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, redirect, useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebase.config";
 import { UserAuth } from "../context/AuthContextProvider";
@@ -7,7 +7,6 @@ import authAxios from "../axios/authAxios-config";
 
 function Navbar() {
   const { user, setUser } = UserAuth();
-  console.log(user);
   const navigate = useNavigate();
   function logOut() {
     try {
@@ -15,6 +14,7 @@ function Navbar() {
         signOut(auth)
           .then(() => {
             setUser(undefined);
+            navigate("/sign-in");
           })
           .catch((error) => console.log(error.message));
       } else if (user != undefined) {
@@ -24,7 +24,7 @@ function Navbar() {
             setUser(undefined);
           })
           .catch((err) => {
-            navigate("/");
+            navigate("/sign-in");
           });
         navigate("/sign-in");
       }
