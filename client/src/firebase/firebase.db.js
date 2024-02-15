@@ -9,9 +9,9 @@ import {
 import { db } from "./firebase.config";
 
 export default {
-  addNewUser: async (username) => {
+  addNewUser: async (uid) => {
     // Kiểm tra xem user có tồn tại hay không.
-    const docRef = doc(db, "users", `${username}`);
+    const docRef = doc(db, "users", `${uid}`);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
@@ -19,7 +19,7 @@ export default {
     }
     try {
       setDoc(
-        doc(db, "users", username),
+        doc(db, "users", uid),
         {
           savedMovies: [],
         },
@@ -30,8 +30,8 @@ export default {
     }
   },
 
-  updateSavedMovies: async (status, username, movie) => {
-    const userRef = doc(db, "users", username);
+  updateSavedMovies: async (status, uid, movie) => {
+    const userRef = doc(db, "users", uid);
     if (status) {
       // Khi status == true => thêm phim vào danh sách các phim đã lưu.
       try {

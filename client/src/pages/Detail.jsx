@@ -6,7 +6,7 @@ import { accessToken } from "../Request";
 import { Link } from "react-router-dom";
 import Review from "../components/Review";
 import ReviewCard from "../components/ReviewCard";
-import instance from "../axios-config";
+import instance from "../axios/themovieApi-axios-config";
 import RightSide from "./RightSide";
 import CardActor from "../components/CardActor";
 

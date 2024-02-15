@@ -1,20 +1,27 @@
-import React from 'react'
-import axios from 'axios'
+import React from "react";
+import { UserAuth } from "../context/AuthContextProvider";
+import authAxios from "../axios/authAxios-config";
+import axios from "axios";
 
 const Account = () => {
-
-  function handleClick() {
-    axios.get('http://localhost:8080/auth')
+  function handleClick(e) {
+    authAxios.get("/auth/test")
     .then(res => {
-      console.log(res.data);
+      console.log("Success");
     })
-  }
-  
-  return (
-    <div className='absolute sm:mt-[120px] mt-[150px]'>
-      <button className='text-3xl text-red-500' onClick={handleClick}>Get Accounts</button>  
-    </div>
-  )
-}
+    .catch(err => {
+      console.log("ERROR");
+    })
 
-export default Account
+  }
+
+  return (
+    <div className="absolute sm:mt-[120px] mt-[150px]">
+      <button className="text-3xl text-red-500" onClick={handleClick}>
+        Get Accounts
+      </button>
+    </div>
+  );
+};
+
+export default Account;

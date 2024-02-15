@@ -1,4 +1,6 @@
 const express = require("express");
+const app = express();
+
 require("dotenv").config();
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
@@ -6,23 +8,49 @@ const cors = require("cors");
 const setHttpHeaders = require("./setHttpHeaders");
 const userModels = require("./userModels");
 const bcrypt = require("bcrypt");
-const app = express();
+const helmet = require("helmet");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 const port = process.env.PORT_AUTH_SERVER || 8080;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+); // alow register http headers
 app.use(setHttpHeaders);
-app.set("view engine", "ejs");
-app.set("views", "views");
+app.use(helmet());
+app.use(cookieParser());
 
-let hashCode = null;
-const user = {
-  email: "",
-  username: "",
-  password: "",
+const authorization = (req, res, next) => {
+  const token = req.cookies.access_token;
+  if (!token) return res.sendStatus(403);
+
+  // Xác thực jwt token.
+  jwt.verify(token, process.env.APP_ACCESS_TOKEN, function (err, payload) {
+    if (err) {
+      // Token không đúng.
+      console.log(err.message);
+      return res.sendStatus(498);
+    }
+    req.user = {
+      username: payload.username,
+      role: payload.role,
+    };
+    return next();
+  });
 };
 
+const generateToken = (user, token, time) => {
+  return jwt.sign(user, token, {
+    expiresIn: time,
+  });
+};
+
+// POST request dùng để cung cấp credentials cho server.
 app.post("/auth/verify", (req, res) => {
   const { email, username, password } = req.body;
   user.email = email;
@@ -82,6 +110,7 @@ app.post("/auth/verify", (req, res) => {
   });
 });
 
+// Xác thực email sau khi user nhập mã code xác thực đã gửi vào email user.
 app.post("/auth/verify-email", (req, res) => {
   const { code } = req.body;
   if (code === hashCode) {
@@ -114,27 +143,174 @@ app.post("/auth/verify-email", (req, res) => {
 });
 
 app.post("/auth/login", async (req, res) => {
+  // Không thể gửi thông tin của access token vào trong biến user được.
+  /* 
+    Vì lý do ứng dụng của ta chạy qua port 3000 của React nên mỗi khi refresh lại trang thì biến user sẽ được set lại về undefined. Nên do đó  khi ta lưu token hoặc thông tin người dùng vào biến này thì sẽ bị mất hết mỗi lần refresh. Điều này không xảy ra với firebase.
+    Nên chúng ta sẽ sử dụng phương pháp sau:
+    + Cả access và refresh đều lưu trên cookie.
+    + access thì không set httpOnly nhưng refresh thì có.
+    + Hàm authorization vẫn giữ nguyên.
+    + access token chỉ lưu username và permission của user.
+    + access token thì set là 1h nhưng cookie để chứa thì nên để lâu hơn nhằm hạn chế thời gian truy cập của người dùng.
+    + refresh token thì để đồng loạt là 365 days.
+  */
+
   const { user } = req.body;
+  let refreshToken = req.cookies.refresh_token;
   try {
-    const result = await userModels.getUser(user.username);
-    bcrypt.compare(user.password, result.password, function (err, result) {
-      if (err || !result) {
-        console.log("authServer_login error!");
-        return res.json({
-          result: false,
-        });
-      } else {
-        return res.json({
-          result: true,
+    const _result = await userModels.getUser(user.username);
+    bcrypt.compare(user.password, _result.password, function (err, result) {
+      return new Promise((resolve, reject) => {
+        if (err || !result) {
+          // Nếu có lỗi hoặc không có kết quả.
+          reject("Username or Password incorrect!");
+        } else {
+          // Tạo access token rồi đính kèm vào cookie.
+          resolve({
+            username: _result.username,
+            permission: _result.permission,
+          });
+        }
+      })
+        .then((data) => {
+          const accessToken = generateToken(
+            {
+              username: _result.username,
+              permission: _result.permission,
+            },
+            process.env.APP_ACCESS_TOKEN,
+            "1h"
+          );
+          if (!refreshToken) {
+            // Tạo refresh token rồi gửi vào cookie.
+            refreshToken = generateToken(
+              data,
+              process.env.APP_REFRESH_TOKEN,
+              "365 days"
+            );
+            res
+              .status(200)
+              .cookie("refresh_token", refreshToken, {
+                maxAge: 365 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: true,
+              })
+              .cookie("access_token", accessToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+              })
+              .json(data);
+          } else {
+            // Nếu có refresh token rồi thì chỉ gửi data về cho client.
+            res
+              .status(200)
+              .cookie("access_token", accessToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+              })
+              .json(data);
+          }
         })
-      }
+        .catch((error) => {
+          res.status(401).json({ error: error.message });
+        });
     });
   } catch (error) {
     console.log(error.message + " authServer_login");
-    return res.json({
-      result: false,
-    });
+    return res.sendStatus(401);
   }
+});
+
+/* Làm mới access-token */
+app.get("/auth/access-token", async (req, res) => {
+  const refreshToken = req.cookies.refresh_token;
+  let access_token = null;
+  if (refreshToken) {
+    return new Promise((resolve, reject) => {
+      // Xác thực refresh token.
+      jwt.verify(
+        refreshToken,
+        process.env.APP_REFRESH_TOKEN,
+        function (err, payload) {
+          if (err) {
+            reject(err.name);
+          } else {
+            access_token = generateToken(
+              {
+                username: payload.username,
+                permission: payload.permission,
+              },
+              process.env.APP_ACCESS_TOKEN,
+              "1h"
+            );
+            resolve(access_token);
+          }
+        }
+      );
+    })
+      .then((data) => {
+        return res
+          .status(204)
+          .cookie("access_token", access_token, {
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+          })
+          .json(data);
+      })
+      .catch((error) => {
+        return res.status(403).json({ error: error.message });
+      });
+  } else {
+    // Kiểm tra hợp lệ của access token.
+    let refresh_token, access_token;
+    return new Promise((resolve, reject) => {
+      const token = req.cookies.access_token;
+      if (!token) reject("Access token doesn't exists!");
+
+      jwt.verify(
+        token,
+        process.env.APP_ACCESS_TOKEN,
+        { ignoreExpiration: true },
+        function (err, payload) {
+          if (err) reject("Token incorrect!");
+
+          access_token = generateToken(
+            { username: payload.username, permission: payload.permission },
+            process.env.APP_ACCESS_TOKEN,
+            "1h"
+          );
+          refresh_token = generateToken(
+            { username: payload.username, permission: payload.permission },
+            process.env.APP_REFRESH_TOKEN,
+            "365 days"
+          );
+
+          resolve(access_token);
+        }
+      );
+    })
+      .then((data) => {
+        res
+          .status(204)
+          .cookie("access_token", access_token, {
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+          })
+          .cookie("refresh_token", refresh_token, {
+            maxAge: 365 * 24 * 60 * 60 * 1000,
+            httpOnly: true,
+            secure: true,
+          })
+          .json(data);
+      })
+      .catch((error) => {
+        res.status(401).json({ error: error.message });
+      });
+  }
+});
+
+app.post("/auth/logout", authorization, (req, res) => {
+  res.clearCookie("access_token").clearCookie("refresh_token").sendStatus(204);
+});
+
+app.get("/auth/test", authorization, (req, res) => {
+  return res.send(Promise.resolve());
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import CardFilm from "../components/CardFilm";
-import instance from "../axios-config";
+import instance from "../axios/themovieApi-axios-config";
 
 const RightSide = () => {
   const [upComing, setUpcoming] = useState([]);
   const [topRated, setTopRated] = useState([]);
   const [popular, setPopular] = useState([]);
   const [loading, setLoading] = useState(true);
-  console.log("Helllo");
 
   useEffect(() => {
     instance

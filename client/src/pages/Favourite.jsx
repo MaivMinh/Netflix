@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { UserAuth } from "../context/AuthContextProvider";
-import { doc, getDocs, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase.config";
 import FavMovie from "../components/FavMovie";
 

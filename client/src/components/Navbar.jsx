@@ -3,14 +3,31 @@ import { Link, useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebase.config";
 import { UserAuth } from "../context/AuthContextProvider";
+import authAxios from "../axios/authAxios-config";
 
 function Navbar() {
   const { user, setUser } = UserAuth();
+  console.log(user);
   const navigate = useNavigate();
-  async function logOut() {
+  function logOut() {
     try {
-      await signOut(auth);
-      navigate("/sign-in");
+      if (auth.currentUser) {
+        signOut(auth)
+          .then(() => {
+            setUser(undefined);
+          })
+          .catch((error) => console.log(error.message));
+      } else if (user != undefined) {
+        authAxios
+          .post("/auth/logout")
+          .then((res) => {
+            setUser(undefined);
+          })
+          .catch((err) => {
+            navigate("/");
+          });
+        navigate("/sign-in");
+      }
     } catch (error) {
       console.log(error.message);
     }
