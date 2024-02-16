@@ -6,20 +6,43 @@ import firebaseDb from "../firebase/firebase.db";
 import { collection, getDocs } from "firebase/firestore";
 import { IoMdCloseCircle } from "react-icons/io";
 import { Link } from "react-router-dom";
+import { auth } from "../firebase/firebase.config";
+import instance from "../axios/logicAxios-config";
 
 const FavMovie = (props) => {
   const movie = props.movie;
   const { user } = UserAuth();
 
   function handleClick(e) {
-    props.onClick(movie.id);
-    console.log(user)
-    firebaseDb.updateSavedMovies(false, user, movie);
+    if (auth.currentUser) {
+      props.onClick(movie.id);
+      firebaseDb.updateSavedMovies(false, user, movie);
+    } else if (user != undefined) {
+      props.onClick(movie.id_film);
+      // call delete api.
+      instance
+        .post("/v1/delete-movie", {
+          username: user.username,
+          movie: {
+            backdrop_path: movie.backdrop_path,
+            id_film: movie.id_film,
+            title: movie.title,
+          },
+        })
+        .then((res) => {})
+        .catch((error) => console.log(error));
+    }
   }
 
   return (
-    <div className="h-full sm:w-[450px] md:w-[260px] lg:w-[300px] inline-block mr-8 cursor-pointer group relative" to={`/detail/${movie?.id}`}>
-      <Link className="absolute top-0 left-0 border-[1px] border-white p-1 rounded-lg group-hover:block hidden hover:text-black hover:bg-white duration-300" to={`/detail/${movie?.id}`}>
+    <div
+      className="h-full sm:w-[450px] md:w-[260px] lg:w-[300px] inline-block mr-8 cursor-pointer group relative"
+      to={`/detail/${movie?.id}`}
+    >
+      <Link
+        className="absolute top-0 left-0 border-[1px] border-white p-1 rounded-lg group-hover:block hidden hover:text-black hover:bg-white duration-300"
+        to={`/detail/${movie?.id}`}
+      >
         Chi tiết
       </Link>
       <img

@@ -11,7 +11,6 @@ const bcrypt = require("bcrypt");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
-const { reject } = require("bcrypt/promises");
 const port = process.env.PORT_AUTH_SERVER || 8080;
 
 app.use(express.urlencoded({ extended: true }));
@@ -20,9 +19,10 @@ app.use(
   cors({
     origin: "http://localhost:3000",
     credentials: true,
+    methods: ['GET, POST, PUT, PATCH, DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 ); // alow register http headers
-app.use(setHttpHeaders);
 app.use(helmet());
 app.use(cookieParser());
 

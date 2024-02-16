@@ -7,6 +7,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase.config";
 import { Link } from "react-router-dom";
 import { auth } from "../firebase/firebase.config";
+import instance from "../axios/logicAxios-config";
 
 const MovieRow = (props) => {
   const movie = props.movie;
@@ -27,46 +28,88 @@ const MovieRow = (props) => {
     }, 1500);
 
     if (currentState) {
-      // Nếu trạng thái hiện tại là true, thêm phim vào danh sách yêu thích.
-      firebaseDb.updateSavedMovies(true, user, movie);
-      console.log(user);
+      if (auth.currentUser) {
+        // Nếu trạng thái hiện tại là true, thêm phim vào danh sách yêu thích.
+        firebaseDb.updateSavedMovies(true, user, movie);
+      } else if (user != undefined) {
+        // Nếu người dùng đăng nhập bằng username và pass.
+        // call api.
+
+        instance
+          .post("/v1/insert-movie", {
+            username: user.username,
+            movie: {
+              backdrop_path: movie.backdrop_path,
+              id_film: movie.id,
+              title: movie.title,
+            },
+          })
+          .then((res) => {})
+          .catch((error) => {
+            console.log(error);
+          });
+      }
     } else if (previousState == true) {
       // Nếu trạng thái hiện tại là false nhưng trạng thái trước đó là true thì điều này có nghĩa là user đã huỷ phim yêu thích này.
-      firebaseDb.updateSavedMovies(false, user, movie);
+      if (auth.currentUser) firebaseDb.updateSavedMovies(false, user, movie);
+      else if (user != undefined) {
+        // call api.
+        instance
+          .post("/v1/delete-movie", {
+            username: user.username,
+            movie: {
+              backdrop_path: movie.backdrop_path,
+              id_film: movie.id,
+              title: movie.title,
+            },
+          })
+          .then((res) => {})
+          .catch((error) => {
+            console.log(error);
+          });
+      }
     }
   }
 
   useEffect(() => {
     if (auth.currentUser != null) {
       /* Bước này giúp xác định xem phim có tồn tại trong danh sách phim yêu thích hay không, ta sẽ kiểm tra id của phim này có tồn tại trong ds hay không. */
-      
+
       /* 
         Dùng onSnapshot() giúp sử dụng chức năng real-time database, điều này giúp cho trạng thái của phim được yêu thích hoặc không được giữ xuyên suốt trong toàn bộ phiên sử dụng.
       */
-      const unsubcribe = onSnapshot(
-        doc(db, "users", `${user}`),
-        (doc) => {
-          const savedMovies = doc.data()?.savedMovies;
-          if (savedMovies != undefined) {
-            for (let index = 0; index < savedMovies.length; index++) {
-              if (savedMovies[index].id === movie.id) setLike(true);
-            }
+      const unsubcribe = onSnapshot(doc(db, "users", `${user}`), (doc) => {
+        const savedMovies = doc.data()?.savedMovies;
+        if (savedMovies != undefined) {
+          for (let index = 0; index < savedMovies.length; index++) {
+            if (savedMovies[index].id === movie.id) setLike(true);
           }
         }
-      );
+      });
       return () => {
         unsubcribe();
       };
-    } else  if(user != undefined) {
+    } else if (user != undefined) {
       // Trường hợp này là đối với user đăng nhập bằng username + pass.
 
+      instance
+        .post("/v1/get-movie", {
+          username: user.username,
+        })
+        .then((res) => {
+          const savedMovies = res.data;
+          if (savedMovies != undefined) {
+            for (let index = 0; index < savedMovies.length; index++) {
+              if (savedMovies[index].id_film === movie.id) setLike(true);
+            }
+          }
+        })
+        .catch((error) => {});
     }
-  }, [user?.email]);
+  }, []);
 
   return (
-    <div
-      className="h-full w-[350px] inline-block mr-8 cursor-pointer group relative"
-    >
+    <div className="h-full w-[350px] inline-block mr-8 cursor-pointer group relative">
       <Link
         className="absolute top-0 left-0 border-[1px] border-white p-1 rounded-lg group-hover:block hidden hover:text-black hover:bg-white duration-300"
         to={`/detail/${movie?.id}`}
