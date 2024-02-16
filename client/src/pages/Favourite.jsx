@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { UserAuth } from "../context/AuthContextProvider";
 import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase/firebase.config";
+import { auth, db } from "../firebase/firebase.config";
 import FavMovie from "../components/FavMovie";
 import { useNavigate } from "react-router-dom";
+import instance from "../axios/logicAxios-config";
 
 const Favourite = () => {
   const { user, setUser } = UserAuth();
@@ -11,24 +12,43 @@ const Favourite = () => {
   const navigate = useNavigate();
 
   function remove(id) {
-    setSavedMovies((previousSavedMovies) => {
-      return previousSavedMovies.filter((value, index) => {
-        return value.id !== id;
+    if (auth.currentUser) {
+      setSavedMovies((previousSavedMovies) => {
+        return previousSavedMovies.filter((value, index) => {
+          return value.id !== id;
+        });
       });
-    });
+    } else if (user != undefined) {
+      setSavedMovies((previousSavedMovies) => {
+        return previousSavedMovies.filter((value, index) => {
+          return value.id_film != id;
+        });
+      });
+    }
   }
-  
-  useEffect(() => {
-    if (user == undefined) navigate("/sign-in");
-  });
 
   useEffect(() => {
-    const unsubcribe = onSnapshot(doc(db, "users", `${user}`), (doc) => {
-      setSavedMovies(doc.data()?.savedMovies);
-    });
-    return () => {
-      unsubcribe();
-    };
+    if (user == undefined) navigate("/sign-in");
+    if (auth.currentUser) {
+      const unsubcribe = onSnapshot(doc(db, "users", `${user}`), (doc) => {
+        setSavedMovies(doc.data()?.savedMovies);
+      });
+      return () => {
+        unsubcribe();
+      };
+    } else if (user != undefined) {
+      instance
+        .post("/v1/get-movie", {
+          username: user.username,
+        })
+        .then((res) => {
+          const savedMovies = res.data;
+          setSavedMovies(savedMovies);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   }, []);
 
   return (
