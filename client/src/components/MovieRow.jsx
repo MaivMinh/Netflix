@@ -6,11 +6,12 @@ import firebaseDb from "../firebase/firebase.db";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase.config";
 import { Link } from "react-router-dom";
+import { auth } from "../firebase/firebase.config";
 
 const MovieRow = (props) => {
   const movie = props.movie;
   const [like, setLike] = useState(false);
-  const { user } = UserAuth();
+  const { user, setUser } = UserAuth();
 
   const [display, setDisplay] = useState(false);
 
@@ -36,12 +37,14 @@ const MovieRow = (props) => {
   }
 
   useEffect(() => {
-    if (user) {
+    if (auth.currentUser != null) {
+      /* Bước này giúp xác định xem phim có tồn tại trong danh sách phim yêu thích hay không, ta sẽ kiểm tra id của phim này có tồn tại trong ds hay không. */
+      
       /* 
         Dùng onSnapshot() giúp sử dụng chức năng real-time database, điều này giúp cho trạng thái của phim được yêu thích hoặc không được giữ xuyên suốt trong toàn bộ phiên sử dụng.
       */
       const unsubcribe = onSnapshot(
-        doc(db, "users", `${user?.email}`),
+        doc(db, "users", `${user}`),
         (doc) => {
           const savedMovies = doc.data()?.savedMovies;
           if (savedMovies != undefined) {
@@ -54,13 +57,15 @@ const MovieRow = (props) => {
       return () => {
         unsubcribe();
       };
+    } else  if(user != undefined) {
+      // Trường hợp này là đối với user đăng nhập bằng username + pass.
+
     }
   }, [user?.email]);
 
   return (
     <div
       className="h-full w-[350px] inline-block mr-8 cursor-pointer group relative"
-      to={`/detail/${movie?.id}`}
     >
       <Link
         className="absolute top-0 left-0 border-[1px] border-white p-1 rounded-lg group-hover:block hidden hover:text-black hover:bg-white duration-300"

@@ -9,7 +9,7 @@ const authAxios = axios.create({
   },
 });
 
-async function refreshToken() {
+async function getAccessToken() {
   await axios
     .get("/auth/access-token", {
       baseURL: "http://localhost:8080",
@@ -35,7 +35,7 @@ authAxios.interceptors.request.use(async function (config) {
       const data = jwtDecode(value);
       if (data.exp * 1000 < new Date().getTime()) {
         // Lấy access token mới.
-        const token = await refreshToken();
+        const token = await getAccessToken();
         config.headers.Authorization = `Bearer ${token}`;
       } else {
         config.headers.Authorization = `Bearer ${value}`;

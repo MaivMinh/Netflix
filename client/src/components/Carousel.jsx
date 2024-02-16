@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FaRegArrowAltCircleLeft } from "react-icons/fa";
 import { FaRegArrowAltCircleRight } from "react-icons/fa";
-import { Link } from "react-router-dom";
 import { UserAuth } from "../context/AuthContextProvider";
 import { useNavigate } from "react-router-dom";
 

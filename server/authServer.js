@@ -11,6 +11,7 @@ const bcrypt = require("bcrypt");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const { reject } = require("bcrypt/promises");
 const port = process.env.PORT_AUTH_SERVER || 8080;
 
 app.use(express.urlencoded({ extended: true }));
@@ -26,22 +27,26 @@ app.use(helmet());
 app.use(cookieParser());
 
 const authorization = (req, res, next) => {
-  const token = req.cookies.access_token;
-  if (!token) return res.sendStatus(403);
+  const accessToken = req.cookies.access_token;
+  if (!accessToken) return res.sendStatus(403);
 
   // Xác thực jwt token.
-  jwt.verify(token, process.env.APP_ACCESS_TOKEN, function (err, payload) {
-    if (err) {
-      // Token không đúng.
-      console.log(err.message);
-      return res.sendStatus(498);
+  jwt.verify(
+    accessToken,
+    process.env.APP_ACCESS_TOKEN,
+    function (err, payload) {
+      if (err) {
+        // Token không đúng.
+        console.log(err.message);
+        return res.sendStatus(498);
+      }
+      req.user = {
+        username: payload.username,
+        role: payload.role,
+      };
+      return next();
     }
-    req.user = {
-      username: payload.username,
-      role: payload.role,
-    };
-    return next();
-  });
+  );
 };
 
 const generateToken = (user, token, time) => {
@@ -51,29 +56,36 @@ const generateToken = (user, token, time) => {
 };
 
 // POST request dùng để cung cấp credentials cho server.
-app.post("/auth/verify", (req, res) => {
-  const { email, username, password } = req.body;
-  user.email = email;
-  user.username = username;
-  user.password = password;
+let user = {
+  email: "",
+  username: "",
+  password: "",
+};
 
-  hashCode = crypto.randomBytes(3).toString("hex");
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      user: "maivanminh.se@gmail.com",
-      pass: "alwm vmnw fycr vlta",
-    },
-  });
+app.post("/auth/verify", async (req, res) => {
+  return new Promise((resolve, reject) => {
+    const { email, username, password } = req.body;
+    user.email = email;
+    user.username = username;
+    user.password = password;
 
-  const message = {
-    from: "maivanminh.se@gmail.com",
-    to: email,
-    subject: "[NETFLIX] - [MÃ XÁC NHẬN TÀI KHOẢN CỦA BẠN]",
-    html: `
+    hashCode = crypto.randomBytes(3).toString("hex");
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: "maivanminh.se@gmail.com",
+        pass: "alwm vmnw fycr vlta",
+      },
+    });
+
+    const message = {
+      from: "maivanminh.se@gmail.com",
+      to: email,
+      subject: "[NETFLIX] - [MÃ XÁC NHẬN TÀI KHOẢN CỦA BẠN]",
+      html: `
     <html>
       <head>
         <style>
@@ -94,20 +106,23 @@ app.post("/auth/verify", (req, res) => {
       </body>
     </html>
     `,
-  };
+    };
 
-  transporter.sendMail(message, function (error, info) {
-    if (error) {
-      console.log("Error in sending email  " + error);
-      return res.json({
-        result: false,
-      });
-    } else {
-      return res.json({
-        result: true,
-      });
-    }
-  });
+    transporter.sendMail(message, function (error, info) {
+      if (error) {
+        console.log("Error in sending email  " + error);
+        reject(Error("Sending email is errored!"));
+      } else {
+        resolve();
+      }
+    });
+  })
+    .then((data) => {
+      res.status(201).json(data);
+    })
+    .catch((error) => {
+      res.status(501).json({ error: error.message });
+    });
 });
 
 // Xác thực email sau khi user nhập mã code xác thực đã gửi vào email user.
@@ -196,7 +211,7 @@ app.post("/auth/login", async (req, res) => {
                 secure: true,
               })
               .cookie("access_token", accessToken, {
-                maxAge: 30 * 24 * 60 * 60 * 1000,
+                maxAge: 15 * 24 * 60 * 60 * 1000,
               })
               .json(data);
           } else {
@@ -250,7 +265,7 @@ app.get("/auth/access-token", async (req, res) => {
         return res
           .status(204)
           .cookie("access_token", access_token, {
-            maxAge: 30 * 24 * 60 * 60 * 1000,
+            maxAge: 15 * 24 * 60 * 60 * 1000,
           })
           .json(data);
       })
@@ -307,10 +322,6 @@ app.get("/auth/access-token", async (req, res) => {
 
 app.post("/auth/logout", authorization, (req, res) => {
   res.clearCookie("access_token").clearCookie("refresh_token").sendStatus(204);
-});
-
-app.get("/auth/test", authorization, (req, res) => {
-  return res.send(Promise.resolve());
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

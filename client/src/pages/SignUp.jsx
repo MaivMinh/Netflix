@@ -4,7 +4,7 @@ import axios from "axios";
 import { UserAuth } from "../context/AuthContextProvider";
 
 const SignUp = () => {
-  const {user, setUser} = UserAuth();
+  const { user, setUser } = UserAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [account, setAccount] = useState({
@@ -13,7 +13,6 @@ const SignUp = () => {
     password: "",
   });
 
- 
   function handleChange(e) {
     setAccount(() => {
       return {
@@ -39,15 +38,14 @@ const SignUp = () => {
         },
       })
       .then((res) => {
-        if (res.data.result) {
-          // Gửi email thành công.
-          setLoading(false);
-          navigate("/verify-email");
-        } else {
-          // Gửi email thất bại.
-          setLoading(false);
-          navigate("/sign-up");
-        }
+        // Gửi email thành công.
+        setLoading(false);
+        navigate("/verify-email");
+      })
+      .catch((error) => {
+        // Gửi email thất bại.
+        setLoading(false);
+        navigate("/sign-up");
       });
   }
 

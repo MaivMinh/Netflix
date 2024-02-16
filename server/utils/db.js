@@ -36,7 +36,7 @@ module.exports = {
         SELECT *
         FROM "users"
         WHERE "username" = '${username}'
-      `)
+      `);
       return result;
     } catch (error) {
       console.log(error.message + " db_getUser()");

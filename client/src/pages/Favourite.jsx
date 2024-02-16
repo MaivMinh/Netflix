@@ -9,9 +9,6 @@ const Favourite = () => {
   const { user, setUser } = UserAuth();
   const [savedMovies, setSavedMovies] = useState([]);
   const navigate = useNavigate();
-  useEffect(() => {
-    if (user == undefined) navigate("/sign-in");
-  });
 
   function remove(id) {
     setSavedMovies((previousSavedMovies) => {
@@ -20,6 +17,10 @@ const Favourite = () => {
       });
     });
   }
+  
+  useEffect(() => {
+    if (user == undefined) navigate("/sign-in");
+  });
 
   useEffect(() => {
     const unsubcribe = onSnapshot(doc(db, "users", `${user}`), (doc) => {
@@ -28,7 +29,7 @@ const Favourite = () => {
     return () => {
       unsubcribe();
     };
-  }, [user?.email]);
+  }, []);
 
   return (
     <div className="w-4/5 absolute left-2/4 -translate-x-2/4 sm:mt-[25%] md:mt-[15%] lg:mt-[10%] mt-[35%] flex flex-wrap gap-8 ml-[5%]">
