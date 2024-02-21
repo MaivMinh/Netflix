@@ -1,6 +1,5 @@
 const express = require("express");
 require("dotenv").config();
-const setHttpHeaders = require("./setHttpHeaders");
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 4000;
@@ -16,7 +15,7 @@ app.use(
     origin: "http://localhost:3000",
     credentials: true,
     methods: ['GET, POST, PUT, PATCH, DELETE'],
-    allowedHeaders: ['Content-Type']
+    allowedHeaders: ['Content-Type', "Authorization"]
   })
 );
 app.use(cookieParser());

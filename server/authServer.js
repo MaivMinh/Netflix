@@ -5,7 +5,6 @@ require("dotenv").config();
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const cors = require("cors");
-const setHttpHeaders = require("./setHttpHeaders");
 const userModels = require("./userModels");
 const bcrypt = require("bcrypt");
 const helmet = require("helmet");
@@ -29,7 +28,6 @@ app.use(cookieParser());
 const authorization = (req, res, next) => {
   const [content, accessToken] = req.headers.authorization.split(" ");
   if (!accessToken || content != "Bearer") return res.sendStatus(403);
-  console.log(accessToken);
 
   // Xác thực jwt token.
   jwt.verify(
