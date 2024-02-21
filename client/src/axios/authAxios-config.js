@@ -22,8 +22,8 @@ async function getAccessToken() {
       return res.data;
     })
     .catch((error) => {
-      console.log(error.message);
-      return;
+      console.log(error);
+      return null;
     });
 }
 
@@ -36,7 +36,8 @@ authAxios.interceptors.request.use(async function (config) {
       if (data.exp * 1000 < new Date().getTime()) {
         // Lấy access token mới.
         const token = await getAccessToken();
-        config.headers.Authorization = `Bearer ${token}`;
+        if(token)
+          config.headers.Authorization = `Bearer ${token}`;
       } else {
         config.headers.Authorization = `Bearer ${value}`;
       }

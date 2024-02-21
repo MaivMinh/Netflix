@@ -14,14 +14,8 @@ const Account = () => {
   });
 
   function handleClick(e) {
-    authAxios
-      .get("/auth/test")
-      .then((res) => {
-        console.log("Success");
-      })
-      .catch((err) => {
-        console.log("ERROR");
-      });
+    
+    
   }
 
   return (

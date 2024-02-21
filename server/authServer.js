@@ -19,16 +19,17 @@ app.use(
   cors({
     origin: "http://localhost:3000",
     credentials: true,
-    methods: ['GET, POST, PUT, PATCH, DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    methods: ["GET, POST, PUT, PATCH, DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 ); // alow register http headers
 app.use(helmet());
 app.use(cookieParser());
 
 const authorization = (req, res, next) => {
-  const accessToken = req.cookies.access_token;
-  if (!accessToken) return res.sendStatus(403);
+  const [content, accessToken] = req.headers.authorization.split(" ");
+  if (!accessToken || content != "Bearer") return res.sendStatus(403);
+  console.log(accessToken);
 
   // Xác thực jwt token.
   jwt.verify(
@@ -194,7 +195,7 @@ app.post("/auth/login", async (req, res) => {
               permission: _result.permission,
             },
             process.env.APP_ACCESS_TOKEN,
-            "1h"
+            "15 days"
           );
           if (!refreshToken) {
             // Tạo refresh token rồi gửi vào cookie.
@@ -238,86 +239,42 @@ app.post("/auth/login", async (req, res) => {
 app.get("/auth/access-token", async (req, res) => {
   const refreshToken = req.cookies.refresh_token;
   let access_token = null;
-  if (refreshToken) {
-    return new Promise((resolve, reject) => {
-      // Xác thực refresh token.
-      jwt.verify(
-        refreshToken,
-        process.env.APP_REFRESH_TOKEN,
-        function (err, payload) {
-          if (err) {
-            reject(err.name);
-          } else {
-            access_token = generateToken(
-              {
-                username: payload.username,
-                permission: payload.permission,
-              },
-              process.env.APP_ACCESS_TOKEN,
-              "1h"
-            );
-            resolve(access_token);
-          }
-        }
-      );
-    })
-      .then((data) => {
-        return res
-          .status(204)
-          .cookie("access_token", access_token, {
-            maxAge: 15 * 24 * 60 * 60 * 1000,
-          })
-          .json(data);
-      })
-      .catch((error) => {
-        return res.status(403).json({ error: error.message });
-      });
-  } else {
-    // Kiểm tra hợp lệ của access token.
-    let refresh_token, access_token;
-    return new Promise((resolve, reject) => {
-      const token = req.cookies.access_token;
-      if (!token) reject("Access token doesn't exists!");
-
-      jwt.verify(
-        token,
-        process.env.APP_ACCESS_TOKEN,
-        { ignoreExpiration: true },
-        function (err, payload) {
-          if (err) reject("Token incorrect!");
-
+  return new Promise((resolve, reject) => {
+    if(!refreshToken)
+      return reject(Error("Refresh token is expired"));
+    
+    // Xác thực refresh token.
+    jwt.verify(
+      refreshToken,
+      process.env.APP_REFRESH_TOKEN,
+      function (err, payload) {
+        if (err) {
+          reject(err.name);
+        } else {
           access_token = generateToken(
-            { username: payload.username, permission: payload.permission },
+            {
+              username: payload.username,
+              permission: payload.permission,
+            },
             process.env.APP_ACCESS_TOKEN,
-            "1h"
+            "15 days"
           );
-          refresh_token = generateToken(
-            { username: payload.username, permission: payload.permission },
-            process.env.APP_REFRESH_TOKEN,
-            "365 days"
-          );
-
           resolve(access_token);
         }
-      );
+      }
+    );
+  })
+    .then((data) => {
+      return res
+        .status(204)
+        .cookie("access_token", access_token, {
+          maxAge: 15 * 24 * 60 * 60 * 1000,
+        })
+        .json(data);
     })
-      .then((data) => {
-        res
-          .status(204)
-          .cookie("access_token", access_token, {
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-          })
-          .cookie("refresh_token", refresh_token, {
-            maxAge: 365 * 24 * 60 * 60 * 1000,
-            httpOnly: true,
-            secure: true,
-          })
-          .json(data);
-      })
-      .catch((error) => {
-        res.status(401).json({ error: error.message });
-      });
-  }
+    .catch((error) => {
+      return res.status(403).json({ error: error.message });
+    });
 });
 
 app.post("/auth/logout", authorization, (req, res) => {
