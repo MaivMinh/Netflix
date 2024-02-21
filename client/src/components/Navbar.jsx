@@ -8,7 +8,7 @@ import authAxios from "../axios/authAxios-config";
 function Navbar() {
   const { user, setUser } = UserAuth();
   const navigate = useNavigate();
-  function logOut() {
+  async function logOut() {
     try {
       if (auth.currentUser) {
         signOut(auth)
@@ -18,7 +18,7 @@ function Navbar() {
           })
           .catch((error) => console.log(error.message));
       } else if (user != undefined) {
-        authAxios
+        await authAxios
           .post("/auth/logout")
           .then((res) => {
             setUser(undefined);
