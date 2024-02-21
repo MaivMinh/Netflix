@@ -193,7 +193,7 @@ app.post("/auth/login", async (req, res) => {
               permission: _result.permission,
             },
             process.env.APP_ACCESS_TOKEN,
-            "15 days"
+            "24h"
           );
           if (!refreshToken) {
             // Tạo refresh token rồi gửi vào cookie.
@@ -255,7 +255,7 @@ app.get("/auth/access-token", async (req, res) => {
               permission: payload.permission,
             },
             process.env.APP_ACCESS_TOKEN,
-            "15 days"
+            "24h"
           );
           resolve(access_token);
         }
