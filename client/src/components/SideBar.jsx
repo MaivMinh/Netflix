@@ -24,7 +24,6 @@ const SideBar = () => {
       <div className="group-hover:flex hidden flex-col items-start ml-[5%] justify-start w-full mt-[100px] sm:mt-[100px] md:mt-20 whitespace-nowrap overflow-y-scroll scrollbar-hide scroll-smooth">
         <SideBarLink content="Trang Chủ" to="/" />
         <p className="border-[1px] border-red-500 w-4/5 ml-3"></p>
-        <SideBarLink content="Thể Loại" to="/genre" />
         <SideBarLink content="Phim Yêu Thích" to="/favourite" />
         <SideBarLink content="Phim Mới" to="/newest" />
         <SideBarLink content="Phim Bộ" to="/drama" />

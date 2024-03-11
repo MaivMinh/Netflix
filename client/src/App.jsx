@@ -12,6 +12,9 @@ import Detail from "./pages/Detail";
 import Trailer from "./pages/Trailer";
 import Account from "./pages/Account";
 import VerifyEmail from "./pages/VerifyEmail";
+import Newest from "./pages/Newest";
+import SearchInput from "./components/SearchInput";
+import Search from "./pages/Search";
 
 function App() {
   /* 
@@ -19,7 +22,6 @@ function App() {
 
   When user opens new tab, or on site refresh, you need to perform request to create new access token, based on refresh token which is stored in Cookie. 
   */
-
 
   return (
     <div className="App relative">
@@ -36,6 +38,8 @@ function App() {
           <Route path="/trailer/:movieID" element={<Trailer />} />
           <Route path="/account" element={<Account />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/newest" element={<Newest />} />
+          <Route path="/search" element={<Search />}  />
         </Routes>
       </AuthContextProvider>
     </div>

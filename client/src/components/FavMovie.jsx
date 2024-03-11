@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FaRegHeart } from "react-icons/fa";
-import { FaHeart } from "react-icons/fa";
 import { UserAuth } from "../context/AuthContextProvider";
 import firebaseDb from "../firebase/firebase.db";
-import { collection, getDocs } from "firebase/firestore";
 import { IoMdCloseCircle } from "react-icons/io";
 import { Link } from "react-router-dom";
 import { auth } from "../firebase/firebase.config";
