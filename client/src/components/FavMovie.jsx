@@ -32,16 +32,22 @@ const FavMovie = (props) => {
   }
 
   return (
-    <div
-      className="h-full sm:w-[450px] md:w-[260px] lg:w-[300px] inline-block mr-8 cursor-pointer group relative"
-      to={`/detail/${movie?.id}`}
-    >
-      <Link
-        className="absolute top-0 left-0 border-[1px] border-white p-1 rounded-lg group-hover:block hidden hover:text-black hover:bg-white duration-300"
-        to={`/detail/${movie?.id}`}
-      >
-        Chi tiết
-      </Link>
+    <div className="h-full sm:w-[450px] md:w-[260px] lg:w-[300px] inline-block mr-8 cursor-pointer group relative">
+      {auth.currentUser ? (
+        <Link
+          className="absolute top-0 left-0 border-[1px] border-white p-1 rounded-lg group-hover:block hidden hover:text-black hover:bg-white duration-300"
+          to={`/detail/${movie?.id}`}
+        >
+          Chi tiết
+        </Link>
+      ) : (
+        <Link
+          className="absolute top-0 left-0 border-[1px] border-white p-1 rounded-lg group-hover:block hidden hover:text-black hover:bg-white duration-300"
+          to={`/detail/${movie?.id_film}`}
+        >
+          Chi tiết
+        </Link>
+      )}
       <img
         className="w-full object-cover rounded-xl group-hover:shadow-lg group-hover:shadow-cyan-300/50"
         src={`https://image.tmdb.org/t/p/original/${movie.backdrop_path}`}

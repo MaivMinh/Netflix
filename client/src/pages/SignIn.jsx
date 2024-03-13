@@ -52,6 +52,7 @@ const SignIn = () => {
         console.log(err.message);
         setLoading(false);
         setUser(undefined);
+        setErr(true);
         navigate("/sign-in");
       });
   }

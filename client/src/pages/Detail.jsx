@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Row from "../components/Row";
 import { useParams } from "react-router-dom";
-import axios from "axios";
-import { accessToken } from "../Request";
 import { Link } from "react-router-dom";
-import Review from "../components/Review";
 import ReviewCard from "../components/ReviewCard";
 import instance from "../axios/themovieApi-axios-config";
 import RightSide from "./RightSide";
@@ -47,7 +43,7 @@ const Detail = () => {
               <div className="movie-img w-[40%] h-full flex flex-col items-center justify-between gap-y-8">
                 <img
                   className="w-full object-cover h-full rounded-xl hover:shadow-lg hover:shadow-cyan-500/50 duration-300"
-                  src={`https://image.tmdb.org/t/p/original/${movie?.backdrop_path}`}
+                  src={`https://image.tmdb.org/t/p/original/${movie?.poster_path}`}
                 />
                 <div className="display-buttons flex flex-row gap-x-8">
                   <Link
@@ -67,7 +63,7 @@ const Detail = () => {
               <div className="infor-movie bg-[#2B2E4A] rounded-xl mr-8 w-[60%] flex flex-col items-start justify-start gap-y-6 pl-4">
                 <div className="w-full text-red-500 py-4">
                   <h1 className="movie-title text-3xl font-bold">
-                    {movie?.original_title}
+                    {movie?.title}
                   </h1>
                   <p className="status text-2xl font-medium">
                     {movie?.tagline}

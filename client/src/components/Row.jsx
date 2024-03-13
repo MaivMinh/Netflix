@@ -16,7 +16,6 @@ const Row = (props) => {
   const { user, setUser } = UserAuth();
   const [movies, setMovies] = useState([]);
   const [savedMovies, setSavedMovies] = useState([]);
-  console.log(savedMovies);
   useEffect(() => {
     // Lấy danh sách film yêu thích của user rồi nạp vào cho MovieRow component.
 

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, redirect, useNavigate } from "react-router-dom";
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebase.config";
 import { UserAuth } from "../context/AuthContextProvider";
@@ -7,7 +7,7 @@ import authAxios from "../axios/authAxios-config";
 import instance from "../axios/themovieApi-axios-config";
 
 function Navbar() {
-  const { user, setUser, searchResult, setSearchResult } = UserAuth();
+  const { user, setUser, setSearchResult } = UserAuth();
   const navigate = useNavigate();
   async function logOut() {
     try {
@@ -42,10 +42,10 @@ function Navbar() {
       instance
         .get(`/search/movie?query=${infor}&language=en-US&page=1`)
         .then((res) => {
-          console.log(res.data);
           const data = {
-            results: res.data.results,
-            type: "film"
+            ...res.data,
+            type: "film", 
+            "infor": infor,
           }
           setSearchResult(data);
         })
@@ -54,10 +54,10 @@ function Navbar() {
         instance
         .get(`/search/person?query=${infor}&language=en-US&page=1`)
         .then((res) => {
-          console.log(res.data);
           const data = {
-            results: res.data.results,
-            type: "actor"
+            ...res.data,
+            type: "actor",
+            "infor": infor,
           }
           setSearchResult(data);
         })
@@ -78,19 +78,19 @@ function Navbar() {
         >
           <div class="flex">
             <select
-              className="rounded-l-lg border-none bg-[#374151] text-gray-400 pl-2"
+              className="rounded-l-lg border-none bg-[#374151] text-white pl-2"
               name="select"
             >
-              <option value={"film"}>Phim</option>
-              <option value={"actor"}>Diễn viên</option>
+              <option value={"film"}>Movies</option>
+            <option value={"actor"}>Persons</option>
             </select>
             <div class="relative w-full">
               <input
                 type="search"
                 id="search-dropdown"
                 name="infor"
-                class="block p-2.5 w-[350px] z-20 text-sm text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-                placeholder="Search Mockups, Logos, Design Templates..."
+                class="block p-2.5 w-[350px] z-20 text-sm text-white bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700  dark:border-gray-600 dark:placeholder-white dark:text-white dark:focus:border-blue-500"
+                placeholder="Search Movies, TV Series, Persons..."
                 required
               />
               <button

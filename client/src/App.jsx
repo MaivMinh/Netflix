@@ -13,7 +13,6 @@ import Trailer from "./pages/Trailer";
 import Account from "./pages/Account";
 import VerifyEmail from "./pages/VerifyEmail";
 import Newest from "./pages/Newest";
-import SearchInput from "./components/SearchInput";
 import Search from "./pages/Search";
 
 function App() {
