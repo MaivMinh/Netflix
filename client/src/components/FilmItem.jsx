@@ -138,7 +138,7 @@ const FilmItem = (props) => {
           colour={`hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`}
         />
       </div>
-      <div className="content basis-3/4  h-full rounded-r-xl py-4 pl-4 flex flex-col justify-between items-start">
+      <div className="content basis-3/4  h-full rounded-r-xl py-4 pl-4 flex flex-col justify-between items-start gap-y-4 overflow-x-hidden overflow-y-scroll scrollbar-hide">
         <p className="text-3xl font-semibold">Title: {infor?.title}</p>
         <div>Overview: {infor?.overview}</div>
         <div className="flex flex-row gap-x-4">

@@ -69,7 +69,7 @@ function Navbar() {
   return (
     <nav className="flex flex-row justify-between py-4 px-[5%] border-b-[1px] rounded-b-2xl items-center bg-transparent z-10 absolute top-0 left-0 right-0">
       <Link className="text-red-600 font-bold text-5xl cursor-pointer" to="/">
-        NETFLIX
+        METFLIX
       </Link>
       <div className="flex flex-row items-center group">
         <form
